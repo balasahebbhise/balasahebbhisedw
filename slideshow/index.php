@@ -8,20 +8,67 @@
 		www.buildinternet.com/project/supersized
 		
 		By Sam Dunn / One Mighty Roar (www.onemightyroar.com)
-		//Released under MIT License / GPL License
+		Released under MIT License / GPL License
 	-->
 	<?php 
 	 
-	include("img.php");
-	$rss_tags = array(  
-		'title',  
-		'link' 
-			);  
-$rss_item_tag = 'item';  
-$rss_url = 'http://devilsworkshop.org/feed';
+	//$ch = curl_init("http://devilsworkshop.org/feed/");
+
+$ch = curl_init("http://feeds.feedburner.com/rb286");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HEADER, 0);
+
+$data = curl_exec($ch);
+curl_close($ch);
+
+$doc = new SimpleXmlElement($data, LIBXML_NOCDATA);
+
+
+
+
+//print_r($doc);
+if(isset($doc->channel))
+{$url=array();
+ $title=array();
+  $url = parseRSS($doc);
+   $title=parseRSST($doc);
+
+}
+
+
+
+function parseRSS($xml)
+{ $path=array();
+    $cnt = count($xml->channel->item);
+    for($i=0; $i<$cnt; $i++)
+            {
+	//$url 	= $xml->channel->item[$i]->link;
+           $path[$i]=getImageformHtml($xml->channel->item[$i]->link);
+	    }
+return $path;
+}
+
+function parseRSST($xml)
+{ $title1=array();
+    $cnt = count($xml->channel->item);
+    for($i=0; $i<$cnt; $i++)
+            {
+	//$url 	= $xml->channel->item[$i]->link;
+           $title1[$i]=$xml->channel->item[$i]->title;
+	    }
+return $title1;
+}
 
 	
-	
+
+function getImageformHtml($url){
+$data = file_get_contents($url); 
+ preg_match_all( '/<img [^>]*src=["|\']([^"|\']+)/i',$data, $result);
+if(isset($result[1][1])){
+return $result[1][1];
+} 
+}
+
 	
 	?>
 
@@ -70,18 +117,19 @@ $rss_url = 'http://devilsworkshop.org/feed';
 					slide_counter           :   1,		//Display slide numbers
 					slide_captions          :   1,		//Slide caption (Pull from "title" in slides array)
 					slides 					:  	[		//Slideshow Images
-														<?php  $rssfeed = rss_to_array($rss_item_tag, $rss_tags, $rss_url);   ?>
-					                                    
-														{image : '<?php getImageformHtml($rssfeed[0]['link']); ?> ' , title : '<?php echo $rssfeed[0]['title']; ?> ',url : '<?php echo $rssfeed[0]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[1]['link']); ?>',   title : '<?php echo $rssfeed[1]['title']; ?>', url : '<?php echo $rssfeed[1]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[2]['link']); ?>',   title : '<?php echo $rssfeed[2]['title']; ?>', url : '<?php echo $rssfeed[2]['link']; ?>'},  
-				                                        {image : '<?php getImageformHtml($rssfeed[3]['link']); ?> ',  title : '<?php echo $rssfeed[3]['title']; ?>', url : '<?php echo $rssfeed[3]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[4]['link']); ?>',   title : '<?php echo $rssfeed[4]['title']; ?>', url : '<?php echo $rssfeed[4]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[5]['link']); ?>',   title : '<?php echo $rssfeed[5]['title']; ?>', url : '<?php echo $rssfeed[5]['link']; ?>'},  
-				                                        {image : '<?php getImageformHtml($rssfeed[6]['link']); ?>',   title : '<?php echo $rssfeed[6]['title']; ?>', url : '<?php echo $rssfeed[6]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[7]['link']); ?>',   title : '<?php echo $rssfeed[7]['title']; ?>', url : '<?php echo $rssfeed[7]['link']; ?>'},  
-														{image : '<?php getImageformHtml($rssfeed[8]['link']); ?>',   title : '<?php echo $rssfeed[8]['title']; ?>', url : '<?php echo $rssfeed[8]['link']; ?>'}, 
-				                                        {image : '<?php getImageformHtml($rssfeed[9]['link']); ?>',   title : '<?php echo $rssfeed[9]['title']; ?>', url : '<?php echo $rssfeed[9]['link']; ?>'}  
+														
+					                                         
+                                                                                                 
+														{image : '<?php echo $url[0]; ?> ' , title : '<?php echo $title[0]; ?> ',url : '<?php echo $url[0]; ?>'},  
+														{image : '<?php echo $url[1]; ?>',   title : '<?php echo $title[1]; ?>', url : '<?php echo $url[1]; ?>'},  
+														{image : '<?php echo $url[2]; ?>',   title : '<?php echo $title[2]; ?>', url : '<?php echo $url[2]; ?>'},  
+				                                                                                {image : '<?php echo $url[3]; ?> ',  title : '<?php echo $title[3]; ?>', url : '<?php echo $url[3]; ?>'},  
+														{image : '<?php echo $url[4]; ?>',   title : '<?php echo $title[4]; ?>', url : '<?php echo $url[4]; ?>'},  
+														{image : '<?php echo $url[5]; ?>',   title : '<?php echo $title[5]; ?>', url : '<?php echo $url[5]; ?>'},  
+				                                                                                {image : '<?php echo $url[6]; ?>',   title : '<?php echo $title[6]; ?>', url : '<?php echo $url[6];?>'},  
+														{image : '<?php echo $url[7]; ?>',   title : '<?php echo $title[7]; ?>', url : '<?php echo $url[7]; ?>'},  
+														{image : '<?php echo $url[8]; ?>',   title : '<?php echo $title[8]; ?>', url : '<?php echo $url[8]; ?>'}, 
+				                                                                                {image : '<?php echo $url[9]; ?>',   title : '<?php echo $title[9]; ?>', url : '<?php echo $url[9]; ?>'}  
 		    											
                                                         ]
 												
