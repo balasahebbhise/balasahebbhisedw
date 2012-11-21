@@ -12,9 +12,7 @@
 	-->
 	<?php 
 	 
-	//$ch = curl_init("http://devilsworkshop.org/feed/");
-
-$ch = curl_init("http://feeds.feedburner.com/rb286");
+	$ch = curl_init("http://devilsworkshop.org/feed/");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, 0);
 
