@@ -1,59 +1,91 @@
-<?php  
-
-
+<?php
 require('fpdf.php');
 
 
+$ch = curl_init("http://devilsworkshop.org/feed/");
 
-	$rss_tags = array(  
-		'title',  
-		'link' 
-			);  
-$rss_item_tag = 'item';  
-$rss_url ='http://devilsworkshop.org/feed';
-$rssfeed = rss_to_array($rss_item_tag, $rss_tags,$rss_url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HEADER, 0);
+
+$data = curl_exec($ch);
+curl_close($ch);
+
+$doc = new SimpleXmlElement($data, LIBXML_NOCDATA);
+
+
+
+
+//print_r($doc);
+
+if(isset($doc->channel))
+{$url=array();
+ $title=array();
+  $url = parseRSS($doc);
+   $title=parseRSST($doc);
+
+print_r($url);
+
+
+print_r($title);
+}
+
+
 $pdf = new FPDF();
 $pdf->AddPage();
 
 $pdf->SetFont('Arial','B',8);
 $i=1;
- foreach($rssfeed as $feed ){
+$b=0;
+foreach($url as $path){
+	//echo  $path;
+//echo "</br>";
 
- $path=getImageformHtml($feed['link']);
-   
-  if(!file_exists('slideimage/'.getfilename($path))){
+ if(!file_exists('slideimage/'.getfilename($path))){
   $image= file_get_contents($path);
 file_put_contents('slideimage/'.getfilename($path),$image);
   }
- 
-$pdf->MultiCell(180,50,($feed['title']));
+
+$pdf->MultiCell(180,50,$title[$b]);
 $pdf->Image('slideimage/'.getfilename($path),130,10*$i,50,0);
 $i+=5;
 if($i==26){
-$i=1;
+$i=1;}
+$b++;
 }
-
-}
-$pdf->output('slideimage/sliderdata.fdf','');
-
 $pdf->Output();
 
 
 
 
-function rss_to_array($tag, $array,$url) {  
-  $doc = new DOMdocument();  
-  $doc->load($url);  
-  $rss_array = array();  
-  $items = array();  
-  foreach($doc-> getElementsByTagName($tag) AS $node) {  
-    foreach($array AS $key => $value) {  
-      $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;  
-    }  
-    array_push($rss_array, $items);  
-  }  
-  return $rss_array;  
+
+
+
+
+function parseRSS($xml)
+{ $path=array();
+    $cnt = count($xml->channel->item);
+    for($i=0; $i<$cnt; $i++)
+            {
+	$url 	= $xml->channel->item[$i]->link;
+
+
+           $path[$i]=getImageformHtml($url);
+   }
+return $path;
 }
+
+function parseRSST($xml)
+{ $title1=array();
+    $cnt = count($xml->channel->item);
+    for($i=0; $i<$cnt; $i++)
+            {
+	//$url 	= $xml->channel->item[$i]->link;
+           $title1[$i]=$xml->channel->item[$i]->title;
+	    }
+return $title1;
+}
+
+
 
 
 function getImageformHtml($url){
@@ -63,7 +95,9 @@ if(isset($result[1][1])){
 return $result[1][1];
 } 
 }
- function getfilename($url){
+
+
+function getfilename($url){
  $iname =$pieces = explode(".", $url);
  $ext="jpg";
  if(sizeof($iname)>1 && strlen($iname[sizeof($iname)-1])<5 )
@@ -74,9 +108,7 @@ return $result[1][1];
   $filename=$filename.'.'.$ext;
   return $filename;
  }
- 
- 
+ ?>
 
 
 
-?>
